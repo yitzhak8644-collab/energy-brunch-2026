@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אנרגיה עסקית מתחדשת 2026 | בראנצ׳ חוויית מותג וסושיאל</title>
+    <style>
+        @font-face {
+            font-family: 'EyalMeir';
+            src: url('fonts/OHEyalMeirBerkowitz-Regular.otf') format('opentype');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'OscarTzar';
+            src: url('fonts/oscar-tzar-bold-fm.otf') format('opentype');
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'OscarTzar';
+            src: url('fonts/oscar-tzar-light-fm (1).otf') format('opentype');
+            font-weight: 300;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --olive: #C4B93F;
+            --olive-light: #d4ca5a;
+            --navy: #1A2744;
+            --magenta: #A03278;
+            --cream: #F5F0E1;
+            --white: #FFFFFF;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'OscarTzar', sans-serif;
+            color: var(--navy);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Wavy lines SVG pattern */
+        .wavy-bg {
+            position: relative;
+        }
+        .wavy-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.15;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 Q45 50 30 100 Q15 150 30 200 Q45 250 30 300 Q15 350 30 400 Q45 450 30 500 Q15 550 30 600' fill='none' stroke='%23ffffff' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 60px 600px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .wavy-bg > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .wavy-bg-dark::before {
+            opacity: 0.08;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 Q45 50 30 100 Q15 150 30 200 Q45 250 30 300 Q15 350 30 400 Q45 450 30 500 Q15 550 30 600' fill='none' stroke='%231A2744' stroke-width='1.5'/%3E%3C/svg%3E");
+        }
+
+        section {
+            padding: 80px 20px;
+        }
+
+        h2 {
+            font-family: 'EyalMeir', sans-serif;
+            font-weight: 400;
+        }
+
+        h3 {
+            font-family: 'EyalMeir', sans-serif;
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            background-color: var(--olive);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .hero-content {
+            max-width: 900px;
+        }
+
+        .hero-logo {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* ===== EMOTIONAL SECTION ===== */
+        .emotional {
+            background-color: var(--navy);
+            color: var(--cream);
+        }
+
+        .emotional h2 {
+            font-family: 'EyalMeir', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+            margin-bottom: 30px;
+            color: var(--white);
+        }
+
+        .emotional p {
+            font-size: 1.15rem;
+            margin-bottom: 20px;
+            line-height: 1.9;
+            font-weight: 300;
+        }
+
+        .emotional .highlight {
+            color: var(--olive-light);
+            font-weight: 700;
+        }
+
+        .emotional .bold-text {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--white);
+        }
+
+        /* ===== CTA SECTION ===== */
+        .cta-section {
+            background-color: var(--cream);
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--magenta);
+            color: var(--white);
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'EyalMeir', sans-serif;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(160, 50, 120, 0.35);
+        }
+
+        /* ===== HOW IT LOOKS SECTION ===== */
+        .how-section {
+            background-color: var(--navy);
+            color: var(--cream);
+        }
+
+        .how-section h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            margin-bottom: 25px;
+            color: var(--white);
+        }
+
+        .how-section p {
+            font-size: 1.15rem;
+            margin-bottom: 20px;
+            line-height: 1.9;
+            font-weight: 300;
+        }
+
+        .how-section .work-list {
+            list-style: none;
+            padding: 0;
+            margin: 30px 0;
+        }
+
+        .how-section .work-list li {
+            font-size: 1.15rem;
+            padding: 12px 0;
+            padding-right: 30px;
+            position: relative;
+            font-weight: 400;
+        }
+
+        .how-section .work-list li::before {
+            content: '✦';
+            position: absolute;
+            right: 0;
+            color: var(--olive-light);
+            font-size: 1rem;
+        }
+
+        /* ===== SPEAKERS SECTION ===== */
+        .speakers {
+            background-color: var(--cream);
+        }
+
+        .speakers h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 60px;
+            color: var(--navy);
+        }
+
+        .speaker-card {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            margin-bottom: 60px;
+        }
+
+        .speaker-card:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .speaker-img {
+            width: 280px;
+            height: 280px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: none;
+        }
+
+        .speaker-info h3 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 5px;
+        }
+
+        .speaker-info .speaker-role {
+            font-size: 1.1rem;
+            color: var(--magenta);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .speaker-info p {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--navy);
+        }
+
+        /* ===== PRODUCER SECTION ===== */
+        .producer {
+            background-color: var(--olive);
+            text-align: center;
+        }
+
+        .producer h2 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 30px;
+        }
+
+        .producer-img {
+            width: 220px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: none;
+            margin-bottom: 15px;
+        }
+
+        .producer-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .producer-role {
+            font-size: 1.1rem;
+            color: var(--navy);
+            font-weight: 500;
+        }
+
+        /* ===== INCLUDES SECTION ===== */
+        .includes {
+            background-color: var(--navy);
+            color: var(--cream);
+        }
+
+        .includes h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--white);
+        }
+
+        .includes-list {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        .includes-list li {
+            font-size: 1.2rem;
+            padding: 14px 0;
+            font-weight: 400;
+        }
+
+        .includes-list li::before {
+            content: '✦ ';
+            color: var(--olive-light);
+        }
+
+        .includes .surprise {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--olive-light);
+        }
+
+        /* ===== DETAILS SECTION ===== */
+        .details {
+            background-color: var(--cream);
+            text-align: center;
+        }
+
+        .details h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            margin-bottom: 40px;
+            color: var(--navy);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .detail-item {
+            padding: 20px;
+        }
+
+        .detail-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .detail-label {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--magenta);
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        /* ===== WHO IS IT FOR SECTION ===== */
+        .who-section {
+            background-color: var(--navy);
+            color: var(--cream);
+            text-align: center;
+        }
+
+        .who-section h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            margin-bottom: 30px;
+            color: var(--white);
+        }
+
+        .who-section p {
+            font-size: 1.2rem;
+            line-height: 1.9;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            font-weight: 300;
+        }
+
+        .who-section .emphasis {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--olive-light);
+            margin-top: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ===== FINAL CTA ===== */
+        .final-cta {
+            background-color: var(--olive);
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .final-cta h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 35px;
+        }
+
+        .final-cta .cta-button {
+            font-size: 1.6rem;
+            padding: 22px 55px;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background-color: var(--navy);
+            color: var(--cream);
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        footer .footer-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        footer p {
+            font-size: 0.95rem;
+            opacity: 0.7;
+        }
+
+        footer a {
+            color: var(--olive-light);
+            text-decoration: none;
+        }
+
+        /* ===== ABOUT US SECTION ===== */
+        .about-us {
+            background-color: var(--cream);
+            text-align: center;
+        }
+
+        .about-us h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 25px;
+        }
+
+        .about-intro {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            max-width: 650px;
+            margin: 0 auto 30px;
+            color: var(--navy);
+        }
+
+        .about-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--magenta);
+            margin-bottom: 35px;
+        }
+
+        .about-team {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .about-member {
+            max-width: 220px;
+        }
+
+        .about-img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: none;
+            margin-bottom: 15px;
+        }
+
+        .about-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 5px;
+        }
+
+        .about-role {
+            font-size: 0.95rem;
+            color: var(--magenta);
+            font-weight: 500;
+        }
+
+        .about-closing {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--navy);
+            line-height: 1.9;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            section {
+                padding: 50px 16px;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0 8px;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 30px 16px;
+            }
+
+            .hero-logo {
+                max-width: 100%;
+            }
+
+            .emotional h2 {
+                font-size: 1.8rem;
+            }
+
+            .emotional p,
+            .how-section p,
+            .speaker-info p {
+                font-size: 1rem;
+            }
+
+            .speaker-card,
+            .speaker-card:nth-child(even) {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .speaker-img {
+                width: 200px;
+                height: 200px;
+            }
+
+            .details-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+
+            .detail-value {
+                font-size: 1rem;
+            }
+
+            .cta-button {
+                padding: 16px 30px;
+                font-size: 1.1rem;
+                width: 90%;
+                max-width: 400px;
+            }
+
+            .final-cta .cta-button {
+                font-size: 1.2rem;
+                padding: 18px 35px;
+            }
+
+            .about-team {
+                gap: 25px;
+            }
+
+            .about-img {
+                width: 140px;
+                height: 140px;
+            }
+
+            .includes-list li {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            section {
+                padding: 40px 14px;
+            }
+
+            .hero {
+                padding: 20px 14px;
+            }
+
+            .details-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .detail-item {
+                padding: 12px 8px;
+            }
+
+            .detail-icon {
+                font-size: 1.5rem;
+            }
+
+            .detail-label {
+                font-size: 0.85rem;
+            }
+
+            .detail-value {
+                font-size: 0.9rem;
+            }
+
+            .speaker-img {
+                width: 180px;
+                height: 180px;
+            }
+
+            .cta-button {
+                font-size: 1rem;
+                padding: 14px 25px;
+                width: 95%;
+            }
+
+            .about-img {
+                width: 120px;
+                height: 120px;
+            }
+
+            .producer-img {
+                width: 160px;
+                height: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="hero-content">
+            <img src="images/LOGO.jpeg" alt="אנרגיה עסקית מתחדשת 2026" class="hero-logo">
+        </div>
+    </section>
+
+    <!-- ===== EMOTIONAL ===== -->
+    <section class="emotional wavy-bg">
+        <div class="container">
+            <h2>תעצרי!</h2>
+            <p>במקום להמשיך לחפש את עצמך — זה הזמן לחזור לעסק שלך בצורה נכונה.</p>
+            <p>בואי נדבר רגע בכנות.<br>אי אפשר לעבוד כרגיל.</p>
+            <p>אחרי תקופה של מלחמה, מתח וחוסר ודאות<br>
+            העסק שלך לא נראה אותו דבר.<br>
+            הראש לא באותו מקום.<br>
+            והשיווק מרגיש לפעמים כמו רעש מיותר.</p>
+            <p>ועדיין — את יודעת שאת צריכה להמשיך למכור, להיות נוכחת ולהניע.</p>
+            <p class="bold-text">אז במקום להילחם בזה — <span class="highlight">זה הזמן לחדש אנרגיה עסקית.</span></p>
+            <p>עוצרות, מורידות עומס, מתארגנות מחדש,<br>
+            וחוזרות לעבוד מחוברות יותר לעצמכן ולעסק.</p>
+            <p class="bold-text">כולנו צריכות את הבוקר הזה שמחבר בין חוויית מותג, סושיאל ועומק.</p>
+        </div>
+    </section>
+
+    <!-- ===== CTA 1 ===== -->
+    <section class="cta-section">
+        <a href="register.html" class="cta-button">לשמור לך מקום?</a>
+    </section>
+
+    <!-- ===== HOW IT LOOKS ===== -->
+    <section class="how-section wavy-bg">
+        <div class="container">
+            <h2>איך זה נראה בפועל?</h2>
+            <p>זה מרחב קטן של נשים כמוך<br>
+            שמגיעות קודם כל לנשום! וגם לעבוד, לחשוב ולצאת עם כיוון.</p>
+            <p><strong>נעבוד על:</strong></p>
+            <ul class="work-list">
+                <li>איך העסק שלך מרגיש מבפנים ואיך זה עובר החוצה</li>
+                <li>איך בונים נוכחות שיווקית שלא שואבת אותך</li>
+                <li>איך לחבר בין מי שאת לבין התוכן שלך</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- ===== SPEAKERS ===== -->
+    <section class="speakers">
+        <div class="container">
+            <h2>מה הולכות ללמוד?</h2>
+
+            <div class="speaker-card">
+                <img src="images/hana.jpeg" alt="חנה טמיר כהן" class="speaker-img">
+                <div class="speaker-info">
+                    <div class="speaker-role">חווית חיים מול חווית מותג</div>
+                    <h3>חנה טמיר כהן</h3>
+                    <p>איך ליצור חוויה עסקית מתמשכת בתוך מציאות משתנה.<br>
+                    איך העסק שלך נשאר יציב ורלוונטי גם כשהמציאות זזה כל הזמן.<br>
+                    עבודה על חוויית מותג מתוך עומק והבנה של השוק.</p>
+                </div>
+            </div>
+
+            <div class="speaker-card">
+                <img src="images/adi.jpeg" alt="עדי לוי" class="speaker-img">
+                <div class="speaker-info">
+                    <div class="speaker-role">מודל סושיאל נקי</div>
+                    <h3>עדי לוי</h3>
+                    <p>איך לעזאזל אני עושה סושיאל בימים האלה????<br>
+                    נלמד מודל פשוט, קל, נקי וחדשני.</p>
+                    <p>כולל תרגיל כתיבה שמעמיק את החיבור בינך לבין הסושיאל שלך ונותן כיוון להמשך.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PRODUCER ===== -->
+    <section class="producer wavy-bg wavy-bg-dark">
+        <div class="container">
+            <h2>מפיקת הבית שלנו</h2>
+            <img src="images/michal.new.jpeg" alt="מיכל אייגר" class="producer-img">
+            <div class="producer-name">מיכל אייגר</div>
+            <div class="producer-role">מפיקת אירועים, ימי גיבוש וכנסים</div>
+        </div>
+    </section>
+
+    <!-- ===== INCLUDES ===== -->
+    <section class="includes wavy-bg">
+        <div class="container">
+            <h2>היום כולל</h2>
+            <ul class="includes-list">
+                <li>בראנצ׳ קולינרי מוקפד</li>
+                <li>פינת קפה ומתוקים לאורך כל הבוקר</li>
+                <li>מרחב נעים וקבוצה קטנה שמאפשרת שיח ועבודה אמיתית</li>
+            </ul>
+            <p class="surprise">ומחכות עוד הפתעות לנרשמות...</p>
+        </div>
+    </section>
+
+    <!-- ===== DETAILS ===== -->
+    <section class="details">
+        <div class="container">
+            <h2>פרטים טכניים</h2>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <div class="detail-icon">📍</div>
+                    <div class="detail-label">מיקום</div>
+                    <div class="detail-value">סטודיו עדידו<br>קיבוץ שלוחות</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">📅</div>
+                    <div class="detail-label">תאריך</div>
+                    <div class="detail-value">יום ראשון<br>3.5.26</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">🕘</div>
+                    <div class="detail-label">שעות</div>
+                    <div class="detail-value">09:00–14:00</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">👩‍💼</div>
+                    <div class="detail-label">משתתפות</div>
+                    <div class="detail-value">עד 20 בלבד</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">💰</div>
+                    <div class="detail-label">עלות</div>
+                    <div class="detail-value">295 ש"ח<br>כולל מע"מ</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== WHO IS IT FOR ===== -->
+    <section class="who-section wavy-bg">
+        <div class="container">
+            <h2>למי זה מתאים?</h2>
+            <p>לבעלות עסקים<br>
+            שרוצות לעצור רגע,<br>
+            לעשות סדר,<br>
+            ולחזור לעשייה עם כיוון ברור.</p>
+            <p class="emphasis">אם את מרגישה שאת בתוך עומס ורעש —<br>
+            זה בדיוק המקום לקחת ממנו צעד אחורה ולעבוד אחרת.</p>
+        </div>
+    </section>
+
+    <!-- ===== FINAL CTA ===== -->
+    <section class="final-cta wavy-bg wavy-bg-dark" id="register">
+        <h2>רוצה לשריין לך מקום?</h2>
+        <a href="register.html" class="cta-button">להרשמה</a>
+    </section>
+
+    <!-- ===== ABOUT US ===== -->
+    <section class="about-us">
+        <div class="container">
+            <h2>מי אנחנו</h2>
+            <p class="about-intro">אנרגיה עסקית מתחדשת הוא מרחב שנוצר כדי להכניס תנועה לעסק שלך ברגעים שבהם קשה להניע.<br>
+            לא עוד ידע — אלא חיבור מחדש, התמקמות מחדש, ועבודה מתוך מה שנכון לך עכשיו.</p>
+
+            <p class="about-label">מאחורי המרחב הזה עומדות:</p>
+
+            <div class="about-team">
+                <div class="about-member">
+                    <img src="images/adi.jpeg" alt="עדי לוי" class="about-img">
+                    <div class="about-name">עדי לוי</div>
+                    <div class="about-role">יוצרת תוכן ומפתחת מוצרי סושיאל</div>
+                </div>
+                <div class="about-member">
+                    <img src="images/hana.jpeg" alt="חנה טמיר כהן" class="about-img">
+                    <div class="about-name">חנה טמיר כהן</div>
+                    <div class="about-role">מומחית לחוויית מותג, פיתוח עסקי ופרסום</div>
+                </div>
+                <div class="about-member">
+                    <img src="images/michal.new.jpeg" alt="מיכל אייגר" class="about-img">
+                    <div class="about-name">מיכל אייגר</div>
+                    <div class="about-role">מפיקת אירועים וכנסים</div>
+                </div>
+            </div>
+
+            <p class="about-closing">יחד אנחנו מניעות בעלות עסקים לחזור לתנועה עסקית<br>
+            מתוך מקום עמוק ונכון.</p>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="footer-title">אנרגיה עסקית מתחדשת 2026</div>
+        <p>בראנצ׳ חוויית מותג וסושיאל</p>
+    </footer>
+
+</body>
+</html>
