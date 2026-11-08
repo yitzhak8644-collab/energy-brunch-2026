@@ -1,6 +1,7 @@
 import { addDays, diffDays } from '../lib/dates';
-import type { AdaptNote, Log, Profile, Session, Week, Zones } from '../types';
+import type { AdaptNote, DailyMetrics, Log, Profile, Session, Week, Zones } from '../types';
 import { buildWeekSessions, makeSession } from './generate';
+import { assessReadiness } from './readiness';
 import { enforceCaps, peakCapMin } from './volume';
 
 export interface AdaptInput {
@@ -10,6 +11,7 @@ export interface AdaptInput {
   logs: Record<string, Log>;
   notes: AdaptNote[];
   today: string;
+  metrics?: Record<string, DailyMetrics>;
 }
 export interface AdaptResult { weeks: Week[]; notes: AdaptNote[]; added: AdaptNote[] }
 
@@ -126,6 +128,23 @@ export function adaptPlan(input: AdaptInput): AdaptResult {
       }
       if (out.length !== w.sessions.length || out.some((s, i) => s !== w.sessions[i])) w.sessions = out;
     }
+  }
+
+  // ── 6. מוכנות יומית (אחרי החישוב מחדש, אידמפוטנטי): מורידים אימון קשה של היום/מחר לקל ──
+  const ready = assessReadiness(input.metrics ?? {}, today);
+  if (ready.fatigued) {
+    const tomorrow = addDays(today, 1);
+    let changed = false;
+    for (const w of weeks) {
+      const out = w.sessions.map((s) => {
+        if (!s.hard || logs[s.id] || (s.date !== today && s.date !== tomorrow)) return s;
+        if (s.discipline !== 'swim' && s.discipline !== 'bike' && s.discipline !== 'run') return s;
+        changed = true;
+        return makeSession(profile, zones, w.phase, s.date, s.discipline, 'easy', Math.max(20, Math.round(s.targetMin * 0.8)));
+      });
+      if (out.some((s, i) => s !== w.sessions[i])) w.sessions = out;
+    }
+    if (changed && !has(`ready:${today}`)) note(`ready:${today}`, weekAt(today)?.index ?? 0, `סימני עייפות (${ready.reasons.join('; ')}): אימון קשה להיום/מחר הוחלף באימון קל.`);
   }
   return { weeks, notes, added };
 }

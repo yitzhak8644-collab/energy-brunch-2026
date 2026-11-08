@@ -96,7 +96,8 @@ export interface Log {
   avgHr?: number;
   rpe?: number;
   pain?: { area: string; level: 0 | 1 | 2 | 3 };
-  source: 'manual' | 'fit';
+  source: 'manual' | 'fit' | 'intervals';
+  activityId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -111,6 +112,36 @@ export interface AdaptNote {
   pain?: { area: string; level: 2 | 3; from: string; until: string; restUntil?: string };
 }
 
+export interface DailyMetrics {
+  date: string;
+  restingHr?: number;
+  hrv?: number;
+  sleepHours?: number;
+  readiness?: number;
+}
+
+export interface SyncReport {
+  at: string;
+  pulled: { activities: number; autoLogged: number; metrics: number };
+  pushed: { created: number; updated: number; deleted: number; unchanged: number };
+  errors: string[];
+  pushErrors: { name: string; date: string; message: string }[];
+}
+
+export interface IntervalsSettings {
+  athleteId: string;
+  apiKey: string; // נשמר מקומית בלבד (IndexedDB) ואינו נכלל בייצוא JSON
+  known: Record<string, string>; // external_id → hash של מה שנדחף
+  lastSyncAt?: string;
+  lastReport?: SyncReport;
+  error?: string;
+}
+
+export interface Settings {
+  autoSync: boolean;
+  intervals?: IntervalsSettings;
+}
+
 export interface PlanState {
   userId: string;
   profile?: Profile;
@@ -118,4 +149,6 @@ export interface PlanState {
   weeks: Week[];
   logs: Record<string, Log>; // לפי sessionId
   adaptNotes: AdaptNote[];
+  metrics: Record<string, DailyMetrics>; // לפי תאריך
+  settings: Settings;
 }

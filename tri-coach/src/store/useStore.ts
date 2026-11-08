@@ -6,10 +6,12 @@ import { periodize } from '../engine/periodize';
 import { weeklyTargets } from '../engine/volume';
 import { computeZones } from '../engine/zones';
 import { diffDays, todayLocal } from '../lib/dates';
+import { newId } from '../lib/id';
+import { syncIntervals, type SyncOpts } from '../sync/syncNow';
 import { idbAdapter, type StorageAdapter } from './storage';
-import { DEFAULT_USER, type Log, type PlanState, type Profile } from '../types';
+import { DEFAULT_USER, type IntervalsSettings, type Log, type PlanState, type Profile } from '../types';
 
-export const STATE_VERSION = 1;
+export const STATE_VERSION = 2;
 
 export interface LogInput {
   sessionId: string;
@@ -25,15 +27,23 @@ interface Actions {
   replan(patch: Partial<Profile>, today?: string): void;
   saveLog(input: LogInput, today?: string): void;
   runAdapt(today?: string): void;
+  setIntervals(cfg?: { athleteId: string; apiKey: string }): void;
+  setAutoSync(on: boolean): void;
+  syncIntervals(opts?: SyncOpts): ReturnType<typeof syncIntervals>;
   importState(json: string): void;
   exportState(): string;
   reset(): void;
 }
-export type Store = PlanState & Actions & { hydrated: boolean };
+export type Store = PlanState & Actions & { hydrated: boolean; syncing: boolean };
 
-const empty = (userId: string): PlanState => ({ userId, weeks: [], logs: {}, adaptNotes: [] });
-const newId = () => (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`);
-const stateOf = (s: Store): PlanState => ({ userId: s.userId, profile: s.profile, zones: s.zones, weeks: s.weeks, logs: s.logs, adaptNotes: s.adaptNotes });
+const empty = (userId: string): PlanState => ({ userId, weeks: [], logs: {}, adaptNotes: [], metrics: {}, settings: { autoSync: true } });
+const stateOf = (s: Store): PlanState => ({ userId: s.userId, profile: s.profile, zones: s.zones, weeks: s.weeks, logs: s.logs, adaptNotes: s.adaptNotes, metrics: s.metrics, settings: s.settings });
+
+/** מיגרציה: גרסה 1 (שלב 1) לא הכילה settings/metrics. */
+export function migrate(persisted: unknown): PlanState {
+  const p = (persisted ?? {}) as Partial<PlanState>;
+  return { ...empty(p.userId ?? DEFAULT_USER), ...p, metrics: p.metrics ?? {}, settings: { autoSync: true, ...(p.settings ?? {}) } } as PlanState;
+}
 
 export function createStore(adapter: StorageAdapter = idbAdapter, userId = DEFAULT_USER) {
   const storage: PersistStorage<PlanState> = {
@@ -47,9 +57,10 @@ export function createStore(adapter: StorageAdapter = idbAdapter, userId = DEFAU
       (set, get) => ({
         ...empty(userId),
         hydrated: false,
+        syncing: false,
         onboard(profile, today = todayLocal()) {
           const { zones, weeks } = generatePlan({ ...profile, userId }, today);
-          set({ ...empty(userId), profile: { ...profile, userId }, zones, weeks });
+          set({ ...empty(userId), settings: get().settings, profile: { ...profile, userId }, zones, weeks });
         },
         replan(patch, today = todayLocal()) {
           const cur = get().profile;
@@ -65,33 +76,43 @@ export function createStore(adapter: StorageAdapter = idbAdapter, userId = DEFAU
         saveLog(input, today = todayLocal()) {
           const prev = get().logs[input.sessionId];
           const now = new Date().toISOString();
-          const log: Log = {
-            id: prev?.id ?? newId(), userId, source: 'manual', createdAt: prev?.createdAt ?? now, updatedAt: now,
-            ...input,
-          };
+          // ממזגים את הרישום הקודם כדי לא לאבד activityId / avgHr / source של רישום אוטומטי
+          const log: Log = { ...prev, source: prev?.source ?? 'manual', id: prev?.id ?? newId(), userId, createdAt: prev?.createdAt ?? now, updatedAt: now, ...input };
           set({ logs: { ...get().logs, [input.sessionId]: log } });
           get().runAdapt(today);
         },
         runAdapt(today = todayLocal()) {
           const s = get();
           if (!s.profile || !s.zones) return;
-          const r = adaptPlan({ profile: s.profile, zones: s.zones, weeks: s.weeks, logs: s.logs, notes: s.adaptNotes, today });
+          const r = adaptPlan({ profile: s.profile, zones: s.zones, weeks: s.weeks, logs: s.logs, notes: s.adaptNotes, today, metrics: s.metrics });
           if (r.added.length || JSON.stringify(r.weeks) !== JSON.stringify(s.weeks)) set({ weeks: r.weeks, adaptNotes: r.notes });
         },
+        setIntervals(cfg) {
+          const cur = get().settings;
+          const intervals: IntervalsSettings | undefined = cfg ? { athleteId: cfg.athleteId.trim(), apiKey: cfg.apiKey.trim(), known: cur.intervals?.apiKey === cfg.apiKey.trim() && cur.intervals.athleteId === cfg.athleteId.trim() ? cur.intervals.known : {} } : undefined;
+          set({ settings: { ...cur, intervals } });
+        },
+        setAutoSync(on) { set({ settings: { ...get().settings, autoSync: on } }); },
+        syncIntervals: (opts) => syncIntervals(get, set as never, opts),
         importState(json) {
           const data = JSON.parse(json) as PlanState;
           if (!data || !Array.isArray(data.weeks)) throw new Error('קובץ לא תקין');
-          set({ ...empty(userId), ...data, userId });
+          // ההגדרות (כולל מפתח ה-API) נשארות כפי שהן במכשיר הזה
+          set({ ...empty(userId), ...data, userId, metrics: data.metrics ?? {}, settings: get().settings });
         },
-        exportState: () => JSON.stringify(stateOf(get()), null, 2),
-        reset() { set({ ...empty(userId) }); },
+        exportState() {
+          const s = stateOf(get());
+          const settings = { ...s.settings, intervals: s.settings.intervals ? { ...s.settings.intervals, apiKey: '', lastReport: undefined } : undefined };
+          return JSON.stringify({ ...s, settings }, null, 2);
+        },
+        reset() { set({ ...empty(userId), settings: get().settings }); },
       }),
       {
         name: 'tri-coach',
         version: STATE_VERSION,
         storage,
         partialize: (s) => stateOf(s as Store) as never,
-        migrate: (persisted) => persisted as never,
+        migrate: (persisted) => migrate(persisted) as never,
       },
     ),
   );

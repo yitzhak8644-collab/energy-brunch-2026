@@ -9,6 +9,8 @@ export interface ImportedActivity {
   distanceM: number;
   avgHr?: number;
   maxHr?: number;
+  rpe?: number; // 1-10, אם דווח (Intervals: icu_rpe)
+  name?: string;
 }
 
 export interface Calibration {
