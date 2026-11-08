@@ -53,6 +53,7 @@ export function adaptPlan(input: AdaptInput): AdaptResult {
     const key = `eval:${w.index}`;
     const planned = w.sessions.filter((s) => s.discipline !== 'rest');
     if (has(key) || planned.length < 2) continue;
+    if (diffDays(today, w.end) > 21) continue; // ישן מדי: לא מעריכים רטרואקטיבית
     let plannedMin = 0, actualMin = 0, under70 = 0, easyHigh = 0, logged = 0, rpeDiff = 0, rpeCount = 0;
     for (const s of planned) {
       const l = logs[s.id];
@@ -65,6 +66,7 @@ export function adaptPlan(input: AdaptInput): AdaptResult {
         if (s.plannedRpe <= 4 && l.rpe >= s.plannedRpe + 2) easyHigh++;
       }
     }
+    if (logged === 0) continue; // אין רישומים: לא ניתן להבדיל בין "לא התאמן" ל"לא רשם" — כלל ההחמצה מטפל בהיעדרות
     const compliance = actualMin / plannedMin;
     const struggle = under70 >= 2 || easyHigh >= 2;
     const strong = !struggle && compliance >= 0.9 && logged >= 3 && (rpeCount === 0 || rpeDiff / rpeCount <= 0);

@@ -39,11 +39,17 @@ describe('adaptPlan', () => {
   });
   it('אידמפוטנטי — הרצה שנייה לא משנה כלום', () => {
     const logs: Record<string, Log> = {};
-    weeks[0].sessions.forEach((s) => { logs[s.id] = mkLog(s.id, { completed: false }); });
+    weeks[0].sessions.forEach((s, i) => { logs[s.id] = mkLog(s.id, i < 2 ? { completed: false } : { actualMin: Math.round(s.targetMin * 0.5) }); });
     const a = run(logs, week1Start);
+    expect(a.added.length).toBeGreaterThan(0);
     const b = adaptPlan({ profile: p, zones, weeks: a.weeks, logs, notes: a.notes, today: week1Start });
     expect(b.weeks).toEqual(a.weeks);
     expect(b.added).toHaveLength(0);
+  });
+  it('שבועות בלי שום רישום לא מוערכים כ״קושי״ (אין הצטברות הפחתות)', () => {
+    const r = run({}, weeks[8].start);
+    expect(r.added.some((n) => n.key.startsWith('eval:'))).toBe(false);
+    expect(Math.min(...r.weeks.filter((w) => w.start > weeks[8].start).map((w) => w.adjust))).toBeGreaterThanOrEqual(0.7 - 1e-9);
   });
   it('כאב ברמה 2 בברך: ריצות ב-7 הימים הבאים מוחלפות, והשבוע הבא -20%', () => {
     const today = weeks[1].start;
