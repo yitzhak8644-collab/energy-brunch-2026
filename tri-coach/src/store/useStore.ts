@@ -29,6 +29,7 @@ interface Actions {
   runAdapt(today?: string): void;
   setIntervals(cfg?: { athleteId: string; apiKey: string }): void;
   setAutoSync(on: boolean): void;
+  lockIntervals(message: string): void;
   syncIntervals(opts?: SyncOpts): ReturnType<typeof syncIntervals>;
   importState(json: string): void;
   exportState(): string;
@@ -91,6 +92,10 @@ export function createStore(adapter: StorageAdapter = idbAdapter, userId = DEFAU
           const cur = get().settings;
           const intervals: IntervalsSettings | undefined = cfg ? { athleteId: cfg.athleteId.trim(), apiKey: cfg.apiKey.trim(), known: cur.intervals?.apiKey === cfg.apiKey.trim() && cur.intervals.athleteId === cfg.athleteId.trim() ? cur.intervals.known : {} } : undefined;
           set({ settings: { ...cur, intervals } });
+        },
+        lockIntervals(message) {
+          const cur = get().settings;
+          if (cur.intervals) set({ settings: { ...cur, autoSync: false, intervals: { ...cur.intervals, idLost: true, error: message } } });
         },
         setAutoSync(on) { set({ settings: { ...get().settings, autoSync: on } }); },
         syncIntervals: (opts) => syncIntervals(get, set as never, opts),

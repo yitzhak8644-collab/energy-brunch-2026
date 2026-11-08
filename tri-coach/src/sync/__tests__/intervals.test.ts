@@ -158,10 +158,20 @@ describe('IntervalsProvider — דחיפה (התאמה מפורשת)', () => {
     const r = await push(p, sessions);
     expect(r.pushErrors).toEqual([{ name: srv.events[0].name, date: srv.events[0].start_date_local.slice(0, 10), message: 'GARMIN_CONNECT: Workout too long' }]);
   });
-  it('אימון בדיקה: נוצר, נקרא חזרה ונמחק', async () => {
+  it('בדיקת מקצה לקצה על שחייה/אופניים/ריצה אמיתיים: פוענח, external_id חוזר, ונמחק', async () => {
     const { srv, p } = mk();
-    const r = await p.sendTestWorkout(addDays(TODAY, 1));
-    expect(r.steps).toBe(2);
+    const samples = ['swim', 'bike', 'run'].map((d) => sessions.find((s) => s.discipline === d)!);
+    const r = await p.verifyWorkouts(samples, zones, 45, TODAY);
+    expect(r.map((x) => [x.discipline, x.parsed, x.externalIdOk])).toEqual([['swim', true, true], ['bike', true, true], ['run', true, true]]);
+    expect(r.every((x) => (x.steps ?? 0) > 0)).toBe(true);
     expect(srv.events).toHaveLength(0);
+    const sent = srv.calls.filter((c) => c.method === 'POST').map((c) => c.body);
+    expect(sent.every((b) => b.moving_time === undefined && b.external_id.startsWith('tricoach-test:'))).toBe(true);
+    expect(sent[0].start_date_local.slice(0, 10)).toBe(addDays(TODAY, 45));
+  });
+  it('בדיקת מקצה לקצה מזהה external_id שלא נשמר', async () => {
+    const { p } = mk(fakeServer({ dropExternalId: true }));
+    const r = await p.verifyWorkouts([sessions.find((s) => s.discipline === 'run')!], zones, 45, TODAY);
+    expect(r[0].externalIdOk).toBe(false);
   });
 });

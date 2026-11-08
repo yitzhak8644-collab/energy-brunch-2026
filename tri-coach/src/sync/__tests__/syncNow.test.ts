@@ -55,6 +55,21 @@ describe('syncIntervals', () => {
     const rep = await store.getState().syncIntervals({ today: TODAY, provider });
     expect(rep?.errors.join(' ')).toContain('כפילויות');
     expect(store.getState().settings.autoSync).toBe(false);
+    expect(store.getState().settings.intervals?.idLost).toBe(true);
+  });
+  it('אחרי external_id lost גם סנכרון ידני אחרי שינוי תוכנית נחסם — בלי כפילויות', async () => {
+    const { store, srv, provider } = await setup({ dropExternalId: true });
+    await store.getState().syncIntervals({ today: TODAY, provider });
+    const count = srv.events.length;
+    store.getState().replan({ weeklyHours: 5 }, '2026-11-10'); // משנה אורכי אימונים → שמות חדשים
+    const calls = srv.calls.length;
+    expect(await store.getState().syncIntervals({ today: TODAY, provider })).toBeUndefined();
+    expect(await store.getState().syncIntervals({ today: TODAY, provider, pushOnly: true })).toBeUndefined();
+    expect(srv.calls.length).toBe(calls);
+    expect(srv.events).toHaveLength(count);
+    // חיבור מחדש מנקה את החסימה
+    store.getState().setIntervals({ athleteId: 'i1', apiKey: 'SECRET' });
+    expect(store.getState().settings.intervals?.idLost).toBeUndefined();
   });
   it('שגיאת 401: מציג הודעה ולא משנה את התוכנית; רשת לא מפילה', async () => {
     const { store, provider } = await setup({ status: 401 });

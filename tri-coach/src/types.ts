@@ -135,6 +135,8 @@ export interface IntervalsSettings {
   lastSyncAt?: string;
   lastReport?: SyncReport;
   error?: string;
+  /** external_id לא חוזר מ-Intervals: כל דחיפה נחסמת עד ניתוק וחיבור מחדש (למניעת כפילויות) */
+  idLost?: boolean;
 }
 
 export interface Settings {

@@ -1,6 +1,6 @@
 import type { ImportedActivity } from '../engine/calibrate';
 import { addDays } from '../lib/dates';
-import type { DailyMetrics, Session } from '../types';
+import type { DailyMetrics, Session, Zones } from '../types';
 import { eventHash, sessionToEvent, type IntervalsEventInput } from './intervalsText';
 import { reconcile, type RemoteEvent } from './reconcile';
 import type { PushOptions, PushSummary, SyncProvider } from './SyncProvider';
@@ -134,22 +134,31 @@ export class IntervalsProvider implements SyncProvider {
     return out;
   }
 
-  /** בדיקת מקצה לקצה: יוצר אירוע בדיקה, קורא אותו חזרה (מנותח? שגיאות Garmin?) ומוחק. */
-  async sendTestWorkout(date: string): Promise<{ parsed: boolean; movingTime?: number; steps?: number; pushErrors: string[] }> {
-    const ev = {
-      category: 'WORKOUT', start_date_local: `${date}T00:00:00`, name: 'Tri-Coach test', type: 'Run', external_id: `tricoach-test:${date}`,
-      description: 'Warmup\n- 5m 6:30/km-7:00/km Pace\n\nMain Set 2x\n- 3m 5:50/km-6:10/km Pace\n- 2m 6:50/km-7:20/km Pace\n\nCooldown\n- 5m 6:30/km-7:00/km Pace',
-    };
-    const created = await this.req<{ id: number }>('POST', `${this.athlete}/events`, { body: ev });
-    try {
-      const back = await this.req<{ moving_time?: number; workout_doc?: { steps?: unknown[] }; push_errors?: { message?: string }[] }>('GET', `${this.athlete}/events/${created.id}`);
-      return {
-        parsed: !!back.moving_time && back.moving_time > 0, movingTime: back.moving_time, steps: back.workout_doc?.steps?.length,
-        pushErrors: (back.push_errors ?? []).map((p) => p.message ?? '').filter(Boolean),
-      };
-    } finally {
-      await this.req('DELETE', `${this.athlete}/events/${created.id}`).catch(() => undefined);
+  /**
+   * בדיקת מקצה לקצה על אימונים אמיתיים מהתוכנית (שחייה/אופניים/ריצה): יוצר אירוע בלי moving_time,
+   * קורא חזרה — moving_time>0 מוכיח ש-Intervals פענח את הטקסט; external_id חייב לחזור; ואז מוחק.
+   */
+  async verifyWorkouts(samples: Session[], zones: Zones, daysAhead = 45, today = ''): Promise<VerifyResult[]> {
+    const out: VerifyResult[] = [];
+    for (const s of samples) {
+      if (s.discipline !== 'swim' && s.discipline !== 'bike' && s.discipline !== 'run') continue;
+      const date = addDays(today || s.date, daysAhead);
+      const { moving_time: _omit, ...ev } = sessionToEvent({ ...s, date }, zones);
+      void _omit;
+      const sent = { ...ev, name: `Tri-Coach test ${s.discipline}`, external_id: `tricoach-test:${s.discipline}` };
+      const created = await this.req<{ id: number }>('POST', `${this.athlete}/events`, { body: sent });
+      try {
+        const back = await this.req<{ moving_time?: number; external_id?: string; workout_doc?: { steps?: unknown[] }; push_errors?: { message?: string }[] }>('GET', `${this.athlete}/events/${created.id}`);
+        out.push({
+          discipline: s.discipline, parsed: !!back.moving_time && back.moving_time > 0, steps: back.workout_doc?.steps?.length,
+          externalIdOk: back.external_id === sent.external_id, pushErrors: (back.push_errors ?? []).map((x) => x.message ?? '').filter(Boolean),
+        });
+      } finally {
+        await this.req('DELETE', `${this.athlete}/events/${created.id}`).catch(() => undefined);
+      }
     }
+    return out;
   }
 }
 
+export interface VerifyResult { discipline: 'swim' | 'bike' | 'run'; parsed: boolean; steps?: number; externalIdOk: boolean; pushErrors: string[] }

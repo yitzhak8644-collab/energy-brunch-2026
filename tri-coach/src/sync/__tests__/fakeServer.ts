@@ -34,7 +34,10 @@ export function fakeServer(opts: FakeOpts = {}, athlete = 'i1') {
     if (m) {
       const i = events.findIndex((e) => e.id === Number(m[1]));
       if (i < 0) return json({}, 404);
-      if (method === 'GET') return json({ ...events[i], moving_time: events[i].moving_time ?? 0, workout_doc: { steps: [{}, {}] }, push_errors: [] });
+      if (method === 'GET') {
+        const steps = String(events[i].description ?? '').split('\n').filter((l) => l.startsWith('- ')).length;
+        return json({ ...events[i], moving_time: events[i].moving_time ?? (steps ? steps * 300 : 0), workout_doc: { steps: Array.from({ length: steps }, () => ({})) }, push_errors: [] });
+      }
       if (method === 'PUT') { events[i] = { ...events[i], ...body, ...(opts.dropExternalId ? { external_id: undefined } : {}) }; return json(events[i]); }
       if (method === 'DELETE') { events.splice(i, 1); return json({}); }
     }

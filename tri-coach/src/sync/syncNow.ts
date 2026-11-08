@@ -21,6 +21,7 @@ export async function syncIntervals(get: () => Store, set: (p: Partial<Store>) =
   const s0 = get();
   const cfg = s0.settings.intervals;
   if (!cfg?.apiKey || !cfg.athleteId || !s0.zones || !s0.profile) return;
+  if (cfg.idLost) return; // נחסם: external_id לא חוזר — לא דוחפים (גם לא ידנית) עד חיבור מחדש
   if (opts.auto && !s0.settings.autoSync) return;
   if (opts.auto && cfg.lastSyncAt && Date.now() - Date.parse(cfg.lastSyncAt) < THROTTLE_MS) return;
   if (inflight) return;
@@ -68,9 +69,9 @@ export async function syncIntervals(get: () => Store, set: (p: Partial<Store>) =
     report.pushErrors = sum.pushErrors;
 
     if (sum.externalIdLost) {
-      const msg = 'האירועים שנוצרו ב-Intervals.icu לא חזרו עם מזהה — הסנכרון האוטומטי נעצר כדי לא ליצור כפילויות.';
+      const msg = 'האירועים שנוצרו ב-Intervals.icu לא חזרו עם מזהה — הסנכרון נעצר כדי לא ליצור כפילויות. נתק וחבר מחדש כדי לנסות שוב.';
       report.errors.push(msg);
-      patchCfg({ known: sum.known, lastSyncAt: report.at, lastReport: report, error: msg }, { autoSync: false });
+      patchCfg({ known: sum.known, lastSyncAt: report.at, lastReport: report, error: msg, idLost: true }, { autoSync: false });
     } else {
       patchCfg({ known: sum.known, lastSyncAt: report.at, lastReport: report, error: undefined });
     }

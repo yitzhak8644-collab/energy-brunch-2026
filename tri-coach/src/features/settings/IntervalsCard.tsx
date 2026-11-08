@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { todayLocal, addDays } from '../../lib/dates';
-import { errorText, IntervalsProvider } from '../../sync/IntervalsProvider';
+import { todayLocal } from '../../lib/dates';
+import { errorText, IntervalsProvider, type VerifyResult } from '../../sync/IntervalsProvider';
 import { useStore } from '../../store/useStore';
 import { Button, Card, inputCls, Label } from '../../ui/ui';
 
@@ -8,7 +8,7 @@ export const fmtWhen = (iso?: string) =>
   iso ? new Date(iso).toLocaleString('he-IL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'עדיין לא';
 
 export function IntervalsCard() {
-  const { settings, setIntervals, setAutoSync, syncIntervals, syncing } = useStore();
+  const { settings, setIntervals, setAutoSync, syncIntervals, syncing, lockIntervals } = useStore();
   const cfg = settings.intervals;
   const [athleteId, setAthleteId] = useState(cfg?.athleteId ?? '');
   const [apiKey, setApiKey] = useState('');
@@ -21,26 +21,39 @@ export function IntervalsCard() {
     try { setMsg(await f()); } catch (e) { setMsg({ ok: false, text: errorText(e) }); } finally { setBusy(false); }
   };
 
+  const NAMES = { swim: 'שחייה', bike: 'אופניים', run: 'ריצה' } as const;
+  const summarize = (r: VerifyResult[]) => r.map((x) => `${NAMES[x.discipline]}: ${x.parsed ? `פוענח (${x.steps ?? '?'} צעדים)` : 'לא פוענח'}${x.externalIdOk ? '' : ', המזהה לא נשמר'}${x.pushErrors.length ? `, Garmin: ${x.pushErrors.join('; ')}` : ''}`).join(' · ');
+
+  /** בדיקת מקצה לקצה על אימון אמיתי מכל ענף (נוצר רחוק בעתיד ונמחק מיד). */
+  const verify = async (p: IntervalsProvider) => {
+    const { weeks, zones } = useStore.getState();
+    const today = todayLocal();
+    const all = weeks.flatMap((w) => w.sessions);
+    const samples = (['swim', 'bike', 'run'] as const).map((d) => all.find((x) => x.discipline === d && x.date >= today) ?? all.find((x) => x.discipline === d)).filter((x) => !!x);
+    const res = await p.verifyWorkouts(samples, zones!, 45, today);
+    return { res, idOk: res.every((x) => x.externalIdOk), allParsed: res.length > 0 && res.every((x) => x.parsed && !x.pushErrors.length) };
+  };
+
   const connect = () => run(async () => {
     const key = apiKey.trim(), id = athleteId.trim();
     if (!key || !id) return { ok: false, text: 'צריך גם Athlete ID וגם API Key.' };
     const p = new IntervalsProvider({ athleteId: id, apiKey: key });
     const r = await p.testConnection(todayLocal());
+    const v = await verify(p); // לפני הדחיפה הראשונה: external_id חייב לחזור, אחרת יווצרו כפילויות
+    if (!v.idOk) return { ok: false, text: `החיבור תקין אך Intervals.icu לא שומר מזהה לאירועים, ולכן לא אדחוף אימונים (כדי לא ליצור כפילויות). ${summarize(v.res)}` };
     setIntervals({ athleteId: id, apiKey: key });
     setApiKey('');
     void syncIntervals();
-    return { ok: true, text: `מחובר${r.athleteName ? ` כ-${r.athleteName}` : ''}${r.wellnessOk ? '' : ' (מדדי התאוששות לא נגישים)'} — מסנכרן…` };
+    return { ok: v.allParsed, text: `מחובר${r.athleteName ? ` כ-${r.athleteName}` : ''}${r.wellnessOk ? '' : ' (מדדי התאוששות לא נגישים)'}. ${summarize(v.res)}. מסנכרן…` };
   });
   const test = () => run(async () => {
     const r = await provider().testConnection(todayLocal());
     return { ok: true, text: `החיבור תקין${r.athleteName ? ` (${r.athleteName})` : ''}${r.wellnessOk ? '' : ' — אבל מדדי ההתאוששות לא נגישים'}.` };
   });
   const testWorkout = () => run(async () => {
-    const r = await provider().sendTestWorkout(addDays(todayLocal(), 1));
-    if (r.pushErrors.length) return { ok: false, text: `אימון הבדיקה נוצר אך Garmin דיווח: ${r.pushErrors.join('; ')}` };
-    return r.parsed
-      ? { ok: true, text: `אימון בדיקה נוצר ונקרא בהצלחה (${Math.round((r.movingTime ?? 0) / 60)} דק׳, ${r.steps ?? '?'} צעדים) ונמחק. הפורמט תקין.` }
-      : { ok: false, text: 'האימון נוצר אך Intervals.icu לא פענח אותו (אין משך). בדוק בלוח השנה שם.' };
+    const v = await verify(provider());
+    if (!v.idOk) { lockIntervals('Intervals.icu לא שומר מזהה לאירועים — הדחיפה נחסמה כדי לא ליצור כפילויות. נתק וחבר מחדש.'); }
+    return { ok: v.idOk && v.allParsed, text: `${summarize(v.res)}. אימוני הבדיקה נוצרו בעוד 45 יום ונמחקו מיד.` };
   });
 
   const rep = cfg?.lastReport;
@@ -71,9 +84,9 @@ export function IntervalsCard() {
             <input type="checkbox" className="size-5 accent-[var(--accent)]" checked={settings.autoSync} onChange={(e) => setAutoSync(e.target.checked)} />
           </label>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="primary" disabled={syncing || busy} onClick={() => void syncIntervals()}>{syncing ? 'מסנכרן…' : 'סנכרן עכשיו'}</Button>
+            <Button variant="primary" disabled={syncing || busy || !!cfg.idLost} onClick={() => void syncIntervals()}>{syncing ? 'מסנכרן…' : 'סנכרן עכשיו'}</Button>
             <Button disabled={busy} onClick={test}>בדוק חיבור</Button>
-            <Button disabled={busy} onClick={testWorkout}>שלח אימון בדיקה</Button>
+            <Button disabled={busy} onClick={testWorkout}>בדיקת אימונים (שחייה/אופניים/ריצה)</Button>
             <Button variant="danger" disabled={busy} onClick={() => { if (confirm('לנתק? המפתח יימחק מהמכשיר (אימונים שכבר ביומן יישארו).')) setIntervals(undefined); }}>נתק</Button>
           </div>
           <p className="text-xs text-muted">הסנכרון רץ בכל פתיחה של האפליקציה (עד פעם ב-15 דקות) ואחרי שינוי תוכנית. אפליקציית אינטרנט לא יכולה לסנכרן ברקע כשהיא סגורה.</p>
