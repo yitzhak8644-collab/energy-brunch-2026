@@ -26,7 +26,7 @@ const norm = (s?: string | null) => (s ?? '').replace(/\r/g, '').trim();
  * השוואה מפורשת (בלי upsert, שאינו עובד עם API key): התאמה לפי external_id; אימוץ לפי תאריך+סוג+שם
  * אם external_id לא נשמר; מחיקה רק של אירועים שלנו (קידומת) מהיום ואילך.
  */
-export function reconcile(desired: IntervalsEventInput[], remote: RemoteEvent[], opts: { today: string; end: string; known: Record<string, string> }): Ops {
+export function reconcile(desired: IntervalsEventInput[], remote: RemoteEvent[], opts: { today: string; end: string; known: Record<string, string>; keep?: string[] }): Ops {
   const ops: Ops = { create: [], update: [], remove: [], unchanged: 0 };
   const claimed = new Set<number>();
   const mine = (r: RemoteEvent) => !!r.external_id && r.external_id.startsWith(INTERVALS_PREFIX);
@@ -44,7 +44,7 @@ export function reconcile(desired: IntervalsEventInput[], remote: RemoteEvent[],
     else ops.update.push({ id: r.id, ev: d });
   }
   for (const r of remote) {
-    if (claimed.has(r.id) || !mine(r)) continue;
+    if (claimed.has(r.id) || !mine(r) || opts.keep?.includes(r.external_id!)) continue;
     const dt = day(r);
     if (diffDays(dt, opts.today) >= 0 && diffDays(dt, opts.end) <= 0) ops.remove.push(r.id);
   }

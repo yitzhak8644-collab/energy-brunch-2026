@@ -7,6 +7,7 @@ import type { Session } from '../../types';
 import { Card, Chip, Ring } from '../../ui/ui';
 import { LogSheet } from './LogSheet';
 import { SessionCard } from './SessionCard';
+import { SyncBadge } from './SyncBadge';
 
 export function TodayScreen() {
   const { profile, weeks, logs, saveLog } = useStore();
@@ -46,6 +47,8 @@ export function TodayScreen() {
           {week && <p className="mt-2 text-xs text-muted">{PHASE_DESC[week.phase]}</p>}
         </div>
       </Card>
+
+      <SyncBadge />
 
       {daysLeft < 0 && <Card><p className="font-bold">המרוץ מאחוריך — כל הכבוד! 🏁</p></Card>}
       {notStarted && <Card><p className="font-bold">התוכנית מתחילה ב{fmtDateHe(weeks[0].start)}</p><p className="text-sm text-muted">עד אז — מנוחה ופעילות קלה לפי הרצון.</p></Card>}

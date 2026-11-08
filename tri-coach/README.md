@@ -15,13 +15,14 @@ npm run preview    # הגשת הבנייה (מומלץ לבדיקת אופליי
 ## מבנה
 - `src/engine/` — מנוע טהור (ללא React/רשת/DOM; `today` מועבר כפרמטר): `periodize` (שלבים), `volume` (נפח ומגבלות עומס), `zones`, `templates` + `generate` (אימונים כ-`WorkoutStep[]`), `adapt` (התאמה לפי רישומים), `calibrate` (כיול מהיסטוריה), `toFit` (ייצוא אימון ל-FIT).
 - `src/store/` — Zustand + `StorageAdapter` (`storage.ts`). IndexedDB הוא מימוש אחד; מעבר ל-Supabase = מימוש נוסף של אותו ממשק. לכל רשומה יש `userId` (ברירת מחדל `me`).
+- `src/sync/` — `SyncProvider` (ממשק), `IntervalsProvider` (API), `intervalsText` (אימון → פורמט Intervals), `reconcile` (יישור יומן), `syncNow` (מעבר סנכרון).
 - `src/lib/fitImport.ts` — פענוח קבצי FIT/ZIP (טעינה עצלה).
 - `src/features/` — מסכים: onboarding, היום, שבוע, תוכנית, הגדרות.
 
 ## Garmin (שלב 1, ללא API)
 - **כיול:** הגדרות ← "ייבוא קבצי FIT / ZIP". מייצאים מ-Garmin Connect (אתר) ← הגדרות ← ניהול נתונים ← ייצוא. 6 החודשים האחרונים מכיילים קצב שחייה, רכיבה, 5K/10K ונפח שבועי (הערכות — אפשר לתקן).
 - **לשעון:** בכרטיס האימון לחץ "FIT" והעתק את הקובץ לתיקיית `GARMIN/NewFiles` בשעון (כבל USB). אימון Brick מיוצא כשני קבצים (אופניים, ריצה).
-- **בעתיד:** ממשק סנכרון לחיבור Intervals.icu (לא ממומש).
+- **סנכרון אוטומטי:** דרך Intervals.icu (דחיפת אימונים לשעון, משיכת פעילויות ומדדי התאוששות) — ראה [docs/DEPLOY.md](docs/DEPLOY.md), כולל הוראות פריסה ל-Vercel.
 
 ## עיצוב
 פונטים self-hosted: Rubik (כותרות/מספרים) ו-Heebo (גוף) דרך `@fontsource-variable`. מצב כהה/בהיר לפי המערכת. מאפיינים לוגיים של Tailwind (`ms-`/`ps-`/`start-`).

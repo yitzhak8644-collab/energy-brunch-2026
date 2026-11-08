@@ -132,13 +132,15 @@ describe('IntervalsProvider — דחיפה (התאמה מפורשת)', () => {
     expect(srv.events.some((e) => e.id === 901)).toBe(true);
     expect(srv.events).toHaveLength(N - 1 + 2);
   });
-  it('אימון שבוצע (לא ברשימה) לא נדחף ונמחק מהיומן', async () => {
+  it('אימון שבוצע לא נדחף מחדש אבל גם לא נמחק מהיומן (keep); אימון שהוסר מהתוכנית נמחק', async () => {
     const { srv, p } = mk();
     const r1 = await push(p);
-    const done = sessions.filter(inWindow)[0];
-    const r2 = await push(p, sessions.filter((s) => s.id !== done.id), r1.known);
+    const [done, dropped] = sessions.filter(inWindow);
+    const rest = sessions.filter((s) => s.id !== done.id && s.id !== dropped.id);
+    const r2 = await p.pushWorkouts(rest, { zones, today: TODAY, known: r1.known, keep: [`tricoach:${done.id}`] });
     expect(r2.deleted).toBe(1);
-    expect(srv.events.some((e) => e.external_id === `tricoach:${done.id}`)).toBe(false);
+    expect(srv.events.some((e) => e.external_id === `tricoach:${done.id}`)).toBe(true);
+    expect(srv.events.some((e) => e.external_id === `tricoach:${dropped.id}`)).toBe(false);
   });
   it('external_id לא נשמר → externalIdLost, והסנכרון הבא מאמץ לפי תאריך+סוג+שם בלי כפילויות', async () => {
     const { srv, p } = mk(fakeServer({ dropExternalId: true }));

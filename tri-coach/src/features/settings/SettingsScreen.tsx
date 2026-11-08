@@ -3,6 +3,7 @@ import { DISCLAIMER } from '../../i18n/he';
 import { useStore } from '../../store/useStore';
 import { Button, Card, inputCls, Label } from '../../ui/ui';
 import { ImportFit } from './ImportFit';
+import { IntervalsCard } from './IntervalsCard';
 
 export function SettingsScreen() {
   const { profile, replan, exportState, importState, reset } = useStore();
@@ -33,8 +34,10 @@ export function SettingsScreen() {
         <p className="text-xs text-muted">שבועות שכבר עברו נשמרים; השבועות הבאים נבנים מחדש עד תאריך המרוץ.</p>
       </Card>
 
+      <IntervalsCard />
+
       <Card className="space-y-3">
-        <h2 className="text-lg font-extrabold">כיול מ-Garmin</h2>
+        <h2 className="text-lg font-extrabold">כיול מ-Garmin (קבצים)</h2>
         <ImportFit onResult={(patch) => { replan(patch); setMsg('הפרופיל עודכן מההיסטוריה והתוכנית חושבה מחדש.'); }} />
       </Card>
 

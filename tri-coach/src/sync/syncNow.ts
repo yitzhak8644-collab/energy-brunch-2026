@@ -61,7 +61,8 @@ export async function syncIntervals(get: () => Store, set: (p: Partial<Store>) =
 
     const st = get();
     const sessions = st.weeks.flatMap((w) => w.sessions).filter((x) => !st.logs[x.id]);
-    const sum = await provider.pushWorkouts(sessions, { zones: st.zones!, today, known: get().settings.intervals?.known ?? {} });
+    const keep = st.weeks.flatMap((w) => w.sessions).filter((x) => st.logs[x.id]).map((x) => `tricoach:${x.id}`);
+    const sum = await provider.pushWorkouts(sessions, { zones: st.zones!, today, known: get().settings.intervals?.known ?? {}, keep });
     report.pushed = { created: sum.created, updated: sum.updated, deleted: sum.deleted, unchanged: sum.unchanged };
     report.errors.push(...sum.errors);
     report.pushErrors = sum.pushErrors;

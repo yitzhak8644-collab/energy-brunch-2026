@@ -7,6 +7,8 @@ export interface PushOptions {
   today: string; // YYYY-MM-DD
   windowDays?: number; // ברירת מחדל 14
   known?: Record<string, string>; // external_id → hash שנדחף בעבר
+  /** מזהי אימונים שכבר בוצעו/נרשמו: לא נדחפים, אבל גם לא נמחקים מהיומן (נשמר שיוך הפעילות) */
+  keep?: string[];
 }
 
 export interface PushSummary {

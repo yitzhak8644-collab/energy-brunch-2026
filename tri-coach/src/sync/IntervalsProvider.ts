@@ -103,7 +103,7 @@ export class IntervalsProvider implements SyncProvider {
     const remote = await this.listEvents(today, end);
     for (const r of remote) for (const pe of r.push_errors ?? []) if (pe?.message) out.pushErrors.push({ name: r.name ?? '', date: (r.start_date_local ?? '').slice(0, 10), message: `${pe.service ?? 'Garmin'}: ${pe.message}` });
 
-    const ops = reconcile(desired, remote, { today, end, known });
+    const ops = reconcile(desired, remote, { today, end, known, keep: opts.keep });
     out.unchanged = ops.unchanged;
 
     const failed = new Set<string>();
