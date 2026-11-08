@@ -11,7 +11,9 @@ interface FitStep { [k: string]: unknown }
 function paceToSpeedMs(sec: number, perMeters: number) { return perMeters / sec; }
 
 function stepMesg(s: WorkoutStep, idx: number, discipline: 'run' | 'bike' | 'swim'): FitStep {
-  const m: FitStep = { messageIndex: idx, intensity: INTENSITY[s.kind] ?? 'active' };
+  // בבריכה, מנוחה בין חזרות היא 'rest' (השעון מחכה/סופר מנוחה) ולא 'recovery'
+  const intensity = discipline === 'swim' && s.kind === 'recover' ? 'rest' : (INTENSITY[s.kind] ?? 'active');
+  const m: FitStep = { messageIndex: idx, intensity };
   if (s.label) m.notes = clipBytes(s.label, 50);
   if (s.distanceM) { m.durationType = 'distance'; m.durationValue = Math.round(s.distanceM * 100); }
   else { m.durationType = 'time'; m.durationValue = Math.round((s.durationSec ?? 0) * 1000); }

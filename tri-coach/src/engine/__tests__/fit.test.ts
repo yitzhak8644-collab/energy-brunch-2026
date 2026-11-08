@@ -39,6 +39,15 @@ describe('toFit', () => {
     expect(st.customTargetSpeedLow).toBeLessThan(st.customTargetSpeedHigh);
     expect(st.customTargetSpeedHigh).toBeLessThan(6); // מ/ש — ריצה
   });
+  it('שחייה: מנוחה בין חזרות מיוצאת כ-rest, ובשאר הענפים כ-recovery', () => {
+    const intens = (d: 'swim' | 'run') => {
+      const m = new Decoder(Stream.fromByteArray(sessionToFit(find(d)))).read().messages as unknown as M;
+      return m.workoutStepMesgs.map((x) => x.intensity);
+    };
+    expect(intens('swim')).toContain('rest');
+    expect(intens('swim')).not.toContain('recovery');
+    expect(intens('run')).toContain('recovery');
+  });
   it('מרוץ לא ניתן לייצוא', () => {
     const race = weeks[weeks.length - 1].sessions.at(-1)!;
     expect(() => sessionToFit(race)).toThrow();
